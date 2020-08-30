@@ -1,4 +1,4 @@
-import { addItem } from "./cart.actions";
+// import { addItem } from "./cart.actions";
 
 export const addItemToCart = (cartItems, cartItemToAdd) => {
     const exsitingCartItem = cartItems.find(
