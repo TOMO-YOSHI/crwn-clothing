@@ -1,5 +1,3 @@
-// import { addItem } from "./cart.actions";
-
 export const addItemToCart = (cartItems, cartItemToAdd) => {
     const exsitingCartItem = cartItems.find(
         cartItem => cartItem.id === cartItemToAdd.id
