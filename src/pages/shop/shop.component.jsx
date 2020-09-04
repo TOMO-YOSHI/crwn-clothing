@@ -5,13 +5,30 @@ import CollectionsOverview from '../../components/collections-overview/collectio
 // import categoryPage from '../collection/collectionpage.component'
 import CollectionPage from '../collection/collectionpage.component';
 
-const ShopPage = ({ match }) => {
-    return (
-        <div className='shop-page'>
-            <Route exact path={`${match.path}`} component={CollectionsOverview} />
-            <Route path={`${match.path}/:collectionId`} component={CollectionPage} />
-        </div>
-    )
-};
+import { firestore, convertCollectionsSnapshotToMap } from '../../firebase/firebase.utils';
+
+class ShopPage extends React.Component {
+    unsubscribeFromSnapshot = null;
+
+    componentDidMount() {
+        const collectionRef = firestore.collection('collections');
+        
+        collectionRef
+          .onSnapshot(async (snapshot) => {
+            // console.log(snapshot.docs[0].data());
+            convertCollectionsSnapshotToMap(snapshot);
+          });
+    }
+
+    render(){
+        const { match } = this.props;
+        return (
+            <div className="shop-page">
+                <Route exact path={`${match.path}`} component={CollectionsOverview} />
+                <Route path={`${match.path}/:collectionId`} component={CollectionPage} />
+            </div>
+        );
+    };
+}
 
 export default ShopPage;
