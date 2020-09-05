@@ -1,22 +1,28 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
-
-import CollectionsOverview from '../../components/collections-overview/collections-overview';
-// import categoryPage from '../collection/collectionpage.component'
-import CollectionPage from '../collection/collectionpage.component';
+import { connect } from 'react-redux';
 
 import { firestore, convertCollectionsSnapshotToMap } from '../../firebase/firebase.utils';
+
+import { updateCollections } from '../../redux/shop/shop.actions.js'
+
+import CollectionsOverview from "../../components/collections-overview/collections-overview";
+// import categoryPage from '../collection/collectionpage.component'
+import CollectionPage from "../collection/collectionpage.component";
 
 class ShopPage extends React.Component {
     unsubscribeFromSnapshot = null;
 
     componentDidMount() {
+        const { updateCollections } = this.props;
         const collectionRef = firestore.collection('collections');
         
-        collectionRef
+        this.unsubscribeFromSnapshot = collectionRef
           .onSnapshot(async (snapshot) => {
             // console.log(snapshot.docs[0].data());
-            convertCollectionsSnapshotToMap(snapshot);
+            const collectionsMap = convertCollectionsSnapshotToMap(snapshot);
+            // console.log(collectionsMap);
+            updateCollections(collectionsMap);
           });
     }
 
@@ -31,4 +37,8 @@ class ShopPage extends React.Component {
     };
 }
 
-export default ShopPage;
+const mapDispatchToProps = dispatch => ({
+    updateCollections: collectionsMap => dispatch(updateCollections(collectionsMap))
+})
+
+export default connect(null, mapDispatchToProps)(ShopPage);
