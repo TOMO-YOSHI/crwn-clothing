@@ -1,10 +1,12 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
+import { createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 
-import { firestore, convertCollectionsSnapshotToMap } from '../../firebase/firebase.utils';
+// import { firestore, convertCollectionsSnapshotToMap } from '../../firebase/firebase.utils';
 
-import { updateCollections } from '../../redux/shop/shop.actions.js';
+import { fetchCollectionsStartAsync } from '../../redux/shop/shop.actions.js';
+import { selectIsCollectionFetching, selectCollectionsForPreview } from '../../redux/shop/shop.selector';
 
 import WithSpinner from '../../components/with-spinner/with-spinner.component';
 
@@ -16,29 +18,40 @@ const CollectionsOverviewWithSpinner = WithSpinner(CollectionsOverview);
 const CollectionPageWithSpinner = WithSpinner(CollectionPage);
 
 class ShopPage extends React.Component {
-    state = {
-        loading: true
-    };
+  componentDidMount() {
+    const { fetchCollectionsStartAsync } = this.props;
+    fetchCollectionsStartAsync();
+  }
 
-    unsubscribeFromSnapshot = null;
+    // state = {
+    //     loading: true
+    // };
 
-    componentDidMount() {
-        const { updateCollections } = this.props;
-        const collectionRef = firestore.collection('collections');
+    // unsubscribeFromSnapshot = null;
+
+    // componentDidMount() {
+        // const { updateCollections } = this.props;
+        // const collectionRef = firestore.collection('collections');
         
-        this.unsubscribeFromSnapshot = collectionRef
-          .onSnapshot(async (snapshot) => {
-            // console.log(snapshot.docs[0].data());
-            const collectionsMap = convertCollectionsSnapshotToMap(snapshot);
-            // console.log(collectionsMap);
-            updateCollections(collectionsMap);
-            this.setState({ loading: false });
-          });
-    }
+        // // fetch(
+        // //   "https://firestore.googleapis.com/v1/projects/crwn-db-6bdf0/databases/(default)/documents/collections"
+        // // )
+        // // .then(response => response.json())
+        // // .then(collections => console.log(collections))
+
+        // this.unsubscribeFromSnapshot = collectionRef
+        //   .onSnapshot(async (snapshot) => {
+        //     // console.log(snapshot.docs[0].data());
+        //     const collectionsMap = convertCollectionsSnapshotToMap(snapshot);
+        //     // console.log(collectionsMap);
+        //     updateCollections(collectionsMap);
+        //     this.setState({ loading: false });
+        //   });
+    // }
 
     render(){
-        const { match } = this.props;
-        const { loading } = this.state;
+        const { match, isCollectionFetching } = this.props;
+        // const { loading } = this.state;
 
         return (
           <div className="shop-page">
@@ -47,7 +60,7 @@ class ShopPage extends React.Component {
               path={`${match.path}`}
               render={(props) => (
                 <CollectionsOverviewWithSpinner
-                  isLoading={loading}
+                  isLoading={isCollectionFetching}
                   {...props}
                 />
               )}
@@ -56,7 +69,7 @@ class ShopPage extends React.Component {
               path={`${match.path}/:collectionId`}
               render={(props) => (
                 <CollectionPageWithSpinner
-                  isLoading={loading}
+                  isLoading={isCollectionFetching}
                   {...props}
                 />
               )}
@@ -66,8 +79,16 @@ class ShopPage extends React.Component {
     };
 }
 
-const mapDispatchToProps = dispatch => ({
-    updateCollections: collectionsMap => dispatch(updateCollections(collectionsMap))
+// const mapDispatchToProps = dispatch => ({
+//     updateCollections: collectionsMap => dispatch(updateCollections(collectionsMap))
+// })
+
+const mapStateToProps = createStructuredSelector({
+  isCollectionFetching: selectIsCollectionFetching
 })
 
-export default connect(null, mapDispatchToProps)(ShopPage);
+const mapDispatchToProps = dispatch => ({
+  fetchCollectionsStartAsync: () => dispatch(fetchCollectionsStartAsync())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ShopPage);
